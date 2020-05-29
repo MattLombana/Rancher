@@ -1,9 +1,6 @@
-# Rancher Cluster
+# Deploy Rancher On A Dedicated K3s Cluster
 
-This is where configurations and scripts will go to house the cluster to host rancher will go.
-Rancher will be set up on a K3s cluster.
-
-Custom rancher installation on a K3s cluster. These instructions are adapted from [https://rancher.com/docs/rancher/v2.x/en/installation/k8s-install/](https://rancher.com/docs/rancher/v2.x/en/installation/k8s-install/).
+These instructions are adapted from [https://rancher.com/docs/rancher/v2.x/en/installation/k8s-install/](https://rancher.com/docs/rancher/v2.x/en/installation/k8s-install/).
 
 This setup assumes you will use the following:
 
@@ -11,14 +8,45 @@ This setup assumes you will use the following:
 * You will use postgres as the backend datastore
 * You are installing the newest stable version (not alpha or latest) of Rancher
 
+## Table Of Contents
+
+* [Set Up Infrastructure](#set-up-infrastructure)
+  * [1. Set up linux nodes](#1-set-up-linux-nodes)
+  * [2. Set up External Datastore](#2-set-up-external-datastore)
+  * [3. Set up load balancer](#3-set-up-load-balancer)
+  * [4. Set up a DNS Record](#4-set-up-a-dns-record)
+* [Set up a Kubernetes Cluster](#set-up-a-kubernetes-cluster)
+  * [1. Set up the K3s server](#1-set-up-the-k3s-server)
+  * [2. Confirm K3s is running](#2-confirm-k3s-is-running)
+  * [3. Save and stqrt using the kubeconfig file](#3-save-and-stqrt-using-the-kubeconfig-file)
+  * [4. Check the health of your cluster pods](#4-check-the-health-of-your-cluster-pods)
+* [Install Rancher on the Kubernetes Cluster](#install-rancher-on-the-kubernetes-cluster)
+  * [1. Install the required CLI tools](#1-install-the-required-cli-tools)
+  * [2. Add the Helm chart repository](#2-add-the-helm-chart-repository)
+  * [3. Create a namespace for Rancher](#3-create-a-namespace-for-rancher)
+  * [4. Choose your SSL configuration](#4-choose-your-ssl-configuration)
+  * [5. Install cert-manager (optional based on SSL configuration)](#5-install-cert-manager-(optional-based-on-ssl-configuration))
+  * [6. Install Rancher with Helm and your chosen certificate option](#6-install-rancher-with-helm-and-your-chosen-certificate-option)
+  * [7. Verify that the rancher server is successfully deployed](#7-verify-that-the-rancher-server-is-successfully-deployed)
+  * [8. Save your options](#8-save-your-options)
+
+---
+
 ## Set Up Infrastructure
+
+[Back To The Top](#table-of-contents)
+
+[1. Set up linux nodes](#1-set-up-linux-nodes)\
+[2. Set up External Datastore](#2-set-up-external-datastore)\
+[3. Set up load balancer](#3-set-up-load-balancer)\
+[4. Set up a DNS Record](#4-set-up-a-dns-record)
 
 Requirements:
 
 * 2 linux nodes
 * an external database. Rancher suggests MySQL
 * A load balancer do direct traffic between the two nodes
-* A DNS record to amp a URL to the load balancer. This is the rancher server URL and downstream
+* A DNS record and URL to point at the load balancer. This is the rancher server URL and downstream
     kubernetes clusters will need to reach it
 
 ### 1. Set up linux nodes
@@ -86,7 +114,16 @@ docker-compose up -d
 Setup a DNS record in whatever DNS server you use. This DNS record needs to point to the ip of the
 LoadBalancer node. Make sure this is the hostname you intend rancher to respond on.
 
+---
+
 ## Set up a Kubernetes Cluster
+
+[Back To The Top](#table-of-contents)
+
+[1. Set up the K3s server](#1-set-up-the-k3s-server)\
+[2. Confirm K3s is running](#2-confirm-k3s-is-running)\
+[3. Save and start using the kubeconfig file](#3-save-and-start-using-the-kubeconfig-file)\
+[4. Check the health of your cluster pods](#4-check-the-health-of-your-cluster-pods)
 
 ### 1. Set up the K3s server
 
@@ -119,7 +156,7 @@ Now, test the health of the cluster pods:
 sudo k3s kubectl get pods --all-namespaces
 ```
 
-### 3. Save and stqrt using the kubeconfig file
+### 3. Save and start using the kubeconfig file
 
 1. Install kubectl on your local machine.
 2. Copy the file from `/etc/rancher/k3s/k3s.yaml` (on one of the K3s nodes) to `~/.kube/config` (on your local machine).
@@ -147,7 +184,20 @@ kube-system     local-path-provisioner-58fb86bdfd-fmkvd   1/1     Running   0   
 kube-system     coredns-d798c9dd-ljjnf                    1/1     Running   0          8d
 ```
 
+---
+
 ## Install Rancher on the Kubernetes Cluster
+
+[Back To The Top](#table-of-contents)
+
+[1. Install the required CLI tools](#1-install-the-required-cli-tools)\
+[2. Add the Helm chart repository](#2-add-the-helm-chart-repository)\
+[3. Create a namespace for Rancher](#3-create-a-namespace-for-rancher)\
+[4. Choose your SSL configuration](#4-choose-your-ssl-configuration)\
+[5. Install cert-manager (optional based on SSL configuration)](#5-install-cert-manager-(optional-based-on-ssl-configuration))\
+[6. Install Rancher with Helm and your chosen certificate option](#6-install-rancher-with-helm-and-your-chosen-certificate-option)\
+[7. Verify that the rancher server is successfully deployed](#7-verify-that-the-rancher-server-is-successfully-deployed)\
+[8. Save your options](#8-save-your-options)
 
 ### 1. Install the required CLI tools
 
