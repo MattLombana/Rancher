@@ -18,7 +18,7 @@ This setup assumes you will use the following:
 * [Set up a Kubernetes Cluster](#set-up-a-kubernetes-cluster)
   * [1. Set up the K3s server](#1-set-up-the-k3s-server)
   * [2. Confirm K3s is running](#2-confirm-k3s-is-running)
-  * [3. Save and stqrt using the kubeconfig file](#3-save-and-stqrt-using-the-kubeconfig-file)
+  * [3. Save and start using the kubeconfig file](#3-save-and-start-using-the-kubeconfig-file)
   * [4. Check the health of your cluster pods](#4-check-the-health-of-your-cluster-pods)
 * [Install Rancher on the Kubernetes Cluster](#install-rancher-on-the-kubernetes-cluster)
   * [1. Install the required CLI tools](#1-install-the-required-cli-tools)
