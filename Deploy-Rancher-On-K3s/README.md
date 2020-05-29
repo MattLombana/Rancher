@@ -5,7 +5,7 @@ These instructions are adapted from [https://rancher.com/docs/rancher/v2.x/en/in
 This setup assumes you will use the following:
 
 * The load balancer and data store are on separate instances
-* You will use postgres as the backend datastore
+* You will use MySQL as the backend datastore
 * You are installing the newest stable version (not alpha or latest) of Rancher
 
 ## Table Of Contents
@@ -67,25 +67,54 @@ I personally set up 4 of these nodes. These are the specs of them:
 | outbound  | tcp      | 443  | K3s node     |
 | outbound  | tcp      | 2376 | K3s node     |
 | outbound  | tcp      | 6443 | K3s node     |
-| inbound   | tcp      | 5432 | DataStore    |
+| inbound   | tcp      | 3306 | DataStore    |
 | inbound   | tcp      | 80   | LoadBalancer |
 | inbound   | tcp      | 443  | LoadBalancer |
+| inbound   | tcp      | 6443 | LoadBalancer |
 
-**Ensure your nodes have static IPs.**
+**Ensure your nodes have static IPs. You can change this with netplan:**
+
+Edit the netplan configuration:
+
+```bash
+sudo vim /etc/netplan/50-cloud-init.yaml
+```
+
+It should look like this:
+
+```bash
+network:
+  version: 2
+  ethernets:
+    eth0:
+     dhcp4: false
+     addresses: [10.20.30.40/24]
+     gateway4: 10.0.0.1
+     nameservers:
+       addresses: [8.8.8.8,4.4.4.4]
+```
+
+Apply the netplan changes
+
+```bash
+sudo netplan apply
+```
+
 
 Install docker on all four of the linux nodes:
 
 ```bash
 sudo apt-get remove docker docker-engine docker.io containerd runc
-sudo apt-get update
-sudo apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+sudo apt-get update && sudo apt-get upgrade -y
+sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 sudo apt-key fingerprint 0EBFCD88
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 sudo apt-get update
-sudo apt-get install docker-ce docker-ce-cli containerd.io
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
+sudo docker run hello-world
 ```
 
 Two of those nodes will be K3s nodes, one will be for the external datastore, and the other will be
@@ -93,10 +122,11 @@ an nginx load balancer.
 
 ### 2. Set up External Datastore
 
-Copy the docker-compose file to the DataStore node, then run the following commands on it:
+Edit the docker-compose.yml file to change the MySQL password. Then, copy the docker-compose file
+to the DataStore node, then run the following commands on it:
 
 ```bash
-mkdir ./postgres-data
+mkdir ./mysql-data
 docker-compose up -d
 ```
 
@@ -131,7 +161,7 @@ On each of the K3s nodes, run the following command. Make sure to update the dat
 connection string. The values you should change are `password` and `hostname`.
 
 ```bash
-curl -sfL https://get.k3s.io | sh -s - server --datastore-endpoint="postgres://postgres:password@hostname:5432/k3s"
+curl -sfL https://get.k3s.io | sh -s - server --datastore-endpoint="mysql://root:password@tcp(hostname:3306)/k3s"
 ```
 
 ### 2. Confirm K3s is running
@@ -301,6 +331,8 @@ The output will look like:
 
 ```bash
 Waiting for deployment "rancher" rollout to finish: 0 of 3 updated replicas are available...
+Waiting for deployment "rancher" rollout to finish: 1 of 3 updated replicas are available...
+Waiting for deployment "rancher" rollout to finish: 2 of 3 updated replicas are available...
 deployment "rancher" successfully rolled out
 ```
 
@@ -316,7 +348,6 @@ kubectl -n cattle-system rollout status deploy/rancher
 The output will look like:
 
 ```bash
-Waiting for deployment "rancher" rollout to finish: 0 of 3 updated replicas are available...
 deployment "rancher" successfully rolled out
 ```
 

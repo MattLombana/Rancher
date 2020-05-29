@@ -1,15 +1,15 @@
-version: '3.7'
+version: '3.3'
 services:
-  postgresql:
-    image: postgres:latest
+  mysql:
+    image: mysql:5.7
     restart: always
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - ./mysql-data:/var/lib/mysql
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=changeme
-      - POSTGRES_DB=k3s
+      - MYSQL_USER=root
+      - MYSQL_ROOT_PASSWORD=changeme
+      - MYSQL_DATABASE=k3s
     labels:
       - "database"
